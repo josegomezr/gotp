@@ -5,7 +5,8 @@ import (
 	"flag"
 )
 
-var SECRET_PREFIX = ""
+// ConstSecretPrefix a comment
+var ConstSecretPrefix = ""
 
 func main() {
 	var startServer = false
@@ -34,7 +35,7 @@ func main() {
 		os.Exit(128)
 		return
 	}
-	query.Secret = SECRET_PREFIX + query.Secret
+	query.Secret = ConstSecretPrefix + query.Secret
 
 	result, err := verify(query)
 	if err != nil || !result {
@@ -44,3 +45,4 @@ func main() {
     os.Exit(0)
     return
 }
+

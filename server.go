@@ -17,7 +17,7 @@ func handlerCodeGenerator(c *gin.Context) {
 		return
 	}
 
-	query.Secret = SECRET_PREFIX + query.Secret
+	query.Secret = ConstSecretPrefix + query.Secret
 
 	code, err := currentCode(query)
 	
@@ -71,7 +71,7 @@ func handleCodeVerification(c *gin.Context) {
 		return
 	}
 
-	query.Secret = SECRET_PREFIX + query.Secret
+	query.Secret = ConstSecretPrefix + query.Secret
 	result, err := verify(query)
 	
 	if err != nil {

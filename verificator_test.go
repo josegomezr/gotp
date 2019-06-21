@@ -9,7 +9,7 @@ import (
 
 func TestCurrentCode(t *testing.T){
 	query := GenerateCodeQuery{
-		Secret: SECRET_PREFIX + "A234567B",
+		Secret: ConstSecretPrefix + "A234567B",
 	}
 	
 	assert.Equal(t, true, query.validate())
@@ -22,7 +22,7 @@ func TestCurrentCode(t *testing.T){
 }
 
 func TestVerifyCode(t *testing.T){
-	secret := SECRET_PREFIX + "A234567B"
+	secret := ConstSecretPrefix + "A234567B"
 
 	genQuery := GenerateCodeQuery{
 		Secret: secret,

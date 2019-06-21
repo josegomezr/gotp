@@ -1,0 +1,52 @@
+image: golang:latest
+
+stages:
+  - test
+  - build
+
+before_script:
+    - mkdir -p /go/src/gitlab.com/diggi.io/
+    - ln -s $CI_PROJECT_DIR /go/src/gitlab.com/diggi.io/code
+    - cd /go/src/gitlab.com/diggi.io/code
+    # - curl https://raw.githubusercontent.com/golang/dep/master/install.sh | sh
+    # - dep ensure
+    - make dep
+
+unit_tests:
+  stage: test
+  script:
+    - make test
+
+lint_code:
+  stage: test
+  script:
+    - make lint
+
+race_detector:
+  stage: test
+  script:
+    - make race
+
+code_coverage:
+  stage: test
+  script:
+    - make coverage
+
+code_coverage_report:
+  stage: test
+  script:
+    - make coverhtml
+  artifacts:
+    paths:
+      - coverage
+  only:
+  - master
+
+build:
+  stage: build
+  script:
+    - make
+  artifacts:
+    paths:
+    - code
+
