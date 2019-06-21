@@ -5,12 +5,14 @@ import (
     "strings"
 )
 
+// GenerateCodeQuery request
 type GenerateCodeQuery struct {
-    Secret string `json:"secret" form:"secret" xml:"secret" validate:"required,alphanum,min=12,max=32" binding:"required"`
+    Secret string `json:"secret" form:"secret" xml:"secret" validate:"required,alphanum,min=8,max=32" binding:"required"`
 }
 
+// ValidateQuery request
 type ValidateQuery struct {
-    Secret string `json:"secret" form:"secret" xml:"secret" validate:"required,alphanum,min=12,max=24" binding:"required"`
+    Secret string `json:"secret" form:"secret" xml:"secret" validate:"required,alphanum,min=8,max=32" binding:"required"`
     Code  string `json:"code" form:"code" xml:"code"`
 }
 

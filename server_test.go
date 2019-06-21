@@ -33,7 +33,7 @@ func TestGetCodeQSJSON(t *testing.T) {
 
     assert.Equal(t, nil, json.Unmarshal(w.Body.Bytes(), &response))
     
-    code, _ := currentCode(GenerateCodeQuery{Secret: SECRET_PREFIX + secret})
+    code, _ := currentCode(GenerateCodeQuery{Secret: ConstSecretPrefix + secret})
     assert.Equal(t, code, response.Code)
 }
 
@@ -57,7 +57,7 @@ func TestGetCodeQSXML(t *testing.T) {
 
     assert.Equal(t, nil, xml.Unmarshal(w.Body.Bytes(), &response))
     
-    code, _ := currentCode(GenerateCodeQuery{Secret: SECRET_PREFIX + secret})
+    code, _ := currentCode(GenerateCodeQuery{Secret: ConstSecretPrefix + secret})
     assert.Equal(t, response.Code, code)
 }
 
@@ -83,7 +83,7 @@ func TestGetCodeForm(t *testing.T) {
 
     assert.Equal(t, nil, json.Unmarshal(w.Body.Bytes(), &response))
     
-    code, _ := currentCode(GenerateCodeQuery{Secret: SECRET_PREFIX + secret})
+    code, _ := currentCode(GenerateCodeQuery{Secret: ConstSecretPrefix + secret})
     assert.Equal(t, code, response.Code)
 }
 
@@ -107,7 +107,7 @@ func TestBadGetCodeForm(t *testing.T) {
 }
 
 func TestBadGetCodeFormBadSecret(t *testing.T) {
-    old_pf := SECRET_PREFIX
+    oldPf := ConstSecretPrefix
 
     router := setupRouter()
 
@@ -120,9 +120,9 @@ func TestBadGetCodeFormBadSecret(t *testing.T) {
     req, _ := http.NewRequest("POST", "/code", strings.NewReader(payload.Encode()))
     req.Header.Add("Content-Type", "application/x-www-form-urlencoded")
 
-    SECRET_PREFIX = "B1"
+    ConstSecretPrefix = "B1"
     router.ServeHTTP(w, req)
-    SECRET_PREFIX = old_pf
+    ConstSecretPrefix = oldPf
     assert.Equal(t, http.StatusBadRequest, w.Code)
 }
 
@@ -213,7 +213,7 @@ func TestGetCodeJSON(t *testing.T) {
 
     assert.Equal(t, nil, json.Unmarshal(w.Body.Bytes(), &response))
     
-    code, _ := currentCode(GenerateCodeQuery{Secret: SECRET_PREFIX + secret})
+    code, _ := currentCode(GenerateCodeQuery{Secret: ConstSecretPrefix + secret})
     assert.Equal(t, code, response.Code)
 }
 
@@ -241,7 +241,7 @@ func TestGetCodeXML(t *testing.T) {
 
     assert.Equal(t, nil, json.Unmarshal(w.Body.Bytes(), &response))
     
-    code, _ := currentCode(GenerateCodeQuery{Secret: SECRET_PREFIX + secret})
+    code, _ := currentCode(GenerateCodeQuery{Secret: ConstSecretPrefix + secret})
     assert.Equal(t, code, response.Code)
 }
 
@@ -251,7 +251,7 @@ func estGetValidateCode(t *testing.T) {
 
     w := httptest.NewRecorder()
 
-    secret := SECRET_PREFIX + "A234567B"
+    secret := ConstSecretPrefix + "A234567B"
 
     genQuery := GenerateCodeQuery{
         Secret: secret,
