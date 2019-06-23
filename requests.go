@@ -1,7 +1,6 @@
 package main
 import (
     "gopkg.in/go-playground/validator.v9"
-    "regexp"
     "strings"
 )
 
@@ -16,12 +15,18 @@ type ValidateQuery struct {
     Code  string `json:"code" form:"code" xml:"code"`
 }
 
-func validBase32(input string) bool {
-    matched, error := regexp.MatchString("^([A-Z2-7=]+)$", input)
-    return error == nil && matched
+func fillSecret(secret string) string {
+    padding := len(secret) % 8
+    
+    if padding > 0 {
+        secret = secret + strings.Repeat("=", 8 - padding)
+    }
+    secret = strings.ToUpper(secret)
+    return secret
 }
 
-func (c *GenerateCodeQuery) validate() bool {
+// Validate request validator
+func (c *GenerateCodeQuery) Validate() bool {
     v := validator.New()
     err := v.Struct(c)
     
@@ -29,25 +34,21 @@ func (c *GenerateCodeQuery) validate() bool {
         return false
     }
     
-    padding := len(c.Secret) % 8
-    if padding > 0 {
-        c.Secret = c.Secret + strings.Repeat("=", padding)
-    }
-    c.Secret = strings.ToUpper(c.Secret)
+    c.Secret = fillSecret(c.Secret)
+    
     return validBase32(c.Secret)
 }
 
-func (c *ValidateQuery) validate() bool {
+// Validate request validator
+func (c *ValidateQuery) Validate() bool {
     v := validator.New()
     err := v.Struct(c)
     
     if err != nil {
         return false
     }
-    padding := len(c.Secret) % 8
-    if padding > 0 {
-        c.Secret = c.Secret + strings.Repeat("=", padding)
-    }
-    c.Secret = strings.ToUpper(c.Secret)
+    
+    c.Secret = fillSecret(c.Secret)
+
     return validBase32(c.Secret)
 }

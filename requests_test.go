@@ -14,23 +14,23 @@ func TestGenQuery(t *testing.T){
 	query := GenerateCodeQuery{
 		Secret: "ABCDEF23ZWXYGHFM",
 	}
-	assert.Equal(t, true, query.validate())
+	assert.Equal(t, true, query.Validate())
 	
 	query.Secret = "ABC"
-	assert.Equal(t, false, query.validate())
+	assert.Equal(t, false, query.Validate())
 
 	query.Secret = "1"
-	assert.Equal(t, false, query.validate())
+	assert.Equal(t, false, query.Validate())
 
 }
 func TestValQuery(t *testing.T){
 	query := ValidateQuery{
 		Secret: "ABCDEF23ZWXYGHFM",
 	}
-	assert.Equal(t, true, query.validate())
+	assert.Equal(t, true, query.Validate())
 
 	query.Secret = "1"
-	assert.Equal(t, false, query.validate())
+	assert.Equal(t, false, query.Validate())
 	query.Secret = "ABC"
-	assert.Equal(t, false, query.validate())
+	assert.Equal(t, false, query.Validate())
 }

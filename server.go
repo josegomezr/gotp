@@ -3,71 +3,111 @@ package main
 import (
 	"fmt"
 	"net/http"
+	"net/url"
 	"github.com/gin-gonic/gin"
+	qrcode "github.com/skip2/go-qrcode"
 )
 
-func handlerCodeGenerator(c *gin.Context) {
-	var query GenerateCodeQuery;
+func handlerQRGenerator(c *gin.Context) {
+	var png []byte
+
+	var query GenerateCodeQuery
+	
 	if err := c.ShouldBind(&query); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "missing params"})
+		response := GenericErrorResponse{
+			Detail: "Missing Params",
+			Code: "EMP",
+		}
+		response.Send(c)
 		return
 	}
-	if !query.validate() {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid Secret"})
+
+	if !query.Validate() {
+		response := GenericErrorResponse{
+			Detail: "Invalid Input",
+			Code: "EII",
+		}
+		response.Send(c)
+		return
+	}
+	params := url.Values{}
+	params.Add("secret", query.Secret)
+	params.Add("issuer", ConstIssuer)
+
+	payload := "otpauth://totp/TOTP?%s"
+	payload = fmt.Sprintf(payload, params.Encode())
+
+	png, err := qrcode.Encode(payload, qrcode.Medium, 256)
+
+	if err != nil {
+		response := GenericErrorResponse{
+			Detail: "Internal Error",
+			Code: "EGE",
+		}
+		response.Send(c)
+		return	
+	}
+	c.Data(http.StatusOK, "image/png", png)
+}
+
+func handlerCodeGenerator(c *gin.Context) {
+	var query GenerateCodeQuery
+	
+	if err := c.ShouldBind(&query); err != nil {
+		response := GenericErrorResponse{
+			Detail: "Missing Params",
+			Code: "EMP",
+		}
+		response.Send(c)
+		return
+	}
+
+	if !query.Validate() {
+		response := GenericErrorResponse{
+			Detail: "Invalid Input",
+			Code: "EII",
+		}
+		response.Send(c)
 		return
 	}
 
 	query.Secret = ConstSecretPrefix + query.Secret
-
+	
 	code, err := currentCode(query)
 	
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid Secret"})
+		response := GenericErrorResponse{
+			Detail: "Invalid Secret",
+			Code: "EIS",
+		}
+		response.Send(c)
 		return
 	}
+
+	response := GetQueryResponse{
+		Code: code,
+	}
 	
-	acceptHeader := c.GetHeader("Accept")
-
-	switch acceptHeader {
-		case "application/xml":
-			c.XML(http.StatusOK, GetQueryResponse{Code: code})
-		break
-		case "text/plain":
-			c.String(http.StatusOK, code)
-		break
-		default:
-			c.JSON(http.StatusOK, gin.H{"code": code,})
-		break
-	}
+	response.Send(c)
 }
-
-func outputNegotiation(c *gin.Context, statusCode int, payload interface{}) {
-	acceptHeader := c.GetHeader("Accept")
-
-	switch acceptHeader {
-		case "application/xml":
-			c.XML(statusCode, payload)
-		break
-		default:
-			c.JSON(statusCode, payload)
-		break
-	}
-}
-
 
 func handleCodeVerification(c *gin.Context) {
 	var query ValidateQuery;
 
-	statusCode := http.StatusOK
-
 	if err := c.ShouldBind(&query); err != nil {
-		statusCode = http.StatusBadRequest
-		outputNegotiation(c, statusCode, gin.H{"error": "missing params"})
+		response := GenericErrorResponse{
+			Detail: "Missing Params",
+			Code: "EMP",
+		}
+		response.Send(c)
 		return
 	}
-	if !query.validate() {
-		statusCode = http.StatusBadRequest
-		outputNegotiation(c, statusCode, gin.H{"error": "Invalid Secret"})
+	if !query.Validate() {
+		response := GenericErrorResponse{
+			Detail: "Invalid Input",
+			Code: "EII",
+		}
+		response.Send(c)
 		return
 	}
 
@@ -75,12 +115,16 @@ func handleCodeVerification(c *gin.Context) {
 	result, err := verify(query)
 	
 	if err != nil {
-		statusCode = http.StatusBadRequest
-		outputNegotiation(c, statusCode, gin.H{"error": "Invalid code"})
+		response := GenericErrorResponse{
+			Detail: "Invalid Secret",
+			Code: "EIS",
+		}
+		response.Send(c)
 		return
 	}
-	
-	outputNegotiation(c, statusCode, ValidateCodeResponse{Valid: result})
+
+	response := ValidateCodeResponse{Valid: result}
+	response.Send(c)
 }
 
 
@@ -88,12 +132,16 @@ func setupRouter() *gin.Engine {
 	r := gin.Default()
 	r.GET("/code", handlerCodeGenerator)
 	r.POST("/code", handlerCodeGenerator)
+
+	r.GET("/qr", handlerQRGenerator)
+	r.POST("/qr", handlerQRGenerator)
+
 	r.GET("/verify", handleCodeVerification)
 	r.POST("/verify", handleCodeVerification)
 	return r
 }
 
-func serve(port int) {
+func serve(host string, port int) {
 	r := setupRouter()
-	r.Run(fmt.Sprintf(":%d", port)) // listen and serve on 0.0.0.0:8080
+	r.Run(fmt.Sprintf("%s:%d", host, port)) // listen and serve on 0.0.0.0:8080
 }

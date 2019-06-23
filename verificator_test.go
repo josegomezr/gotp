@@ -12,7 +12,7 @@ func TestCurrentCode(t *testing.T){
 		Secret: ConstSecretPrefix + "A234567B",
 	}
 	
-	assert.Equal(t, true, query.validate())
+	assert.Equal(t, true, query.Validate())
 
 	t0 := int64(time.Now().UTC().Unix() / 30)
 	c := dgoogauth.ComputeCode(query.Secret, t0)
@@ -28,7 +28,7 @@ func TestVerifyCode(t *testing.T){
 		Secret: secret,
 	}
 	
-	assert.Equal(t, true, genQuery.validate())
+	assert.Equal(t, true, genQuery.Validate())
 
 	code, _ := currentCode(genQuery)
 	
@@ -37,7 +37,7 @@ func TestVerifyCode(t *testing.T){
 		Code: code,
 	}
 
-	assert.Equal(t, true, valQuery.validate())
+	assert.Equal(t, true, valQuery.Validate())
 
 	result, err := verify(valQuery)
 
@@ -46,5 +46,5 @@ func TestVerifyCode(t *testing.T){
 
 	valQuery.Secret = valQuery.Secret + "1"
 	
-	assert.Equal(t, false, valQuery.validate())
+	assert.Equal(t, false, valQuery.Validate())
 }
