@@ -140,9 +140,15 @@ func TestBadGetCodeFormOverflow(t *testing.T) {
 
     req, _ := http.NewRequest("POST", "/code", strings.NewReader(payload.Encode()))
     req.Header.Add("Content-Type", "application/x-www-form-urlencoded")
+    req.Header.Add("Accept", "text/plain")
 
     router.ServeHTTP(w, req)
+
     assert.Equal(t, http.StatusBadRequest, w.Code)
+    
+    response := w.Body.String()
+
+    assert.Equal(t, "E-EII: Invalid Input", response)
 }
 
 
@@ -158,10 +164,15 @@ func TestBadGetCodeEmptySecret(t *testing.T) {
 
     req, _ := http.NewRequest("POST", "/code", strings.NewReader(payload.Encode()))
     req.Header.Add("Content-Type", "application/x-www-form-urlencoded")
+    req.Header.Add("Accept", "text/plain")
 
     router.ServeHTTP(w, req)
 
     assert.Equal(t, http.StatusBadRequest, w.Code)
+    
+    response := w.Body.String()
+
+    assert.Equal(t, "E-EMP: Missing Params", response)
 }
 
 func TestBadGetCodeEmpty(t *testing.T) {
@@ -171,10 +182,14 @@ func TestBadGetCodeEmpty(t *testing.T) {
 
     req, _ := http.NewRequest("POST", "/code", nil)
     req.Header.Add("Content-Type", "application/x-www-form-urlencoded")
+    req.Header.Add("Accept", "text/plain")
 
     router.ServeHTTP(w, req)
-
     assert.Equal(t, http.StatusBadRequest, w.Code)
+    
+    response := w.Body.String()
+    
+    assert.Equal(t, response, "E-EMP: Missing Params")
 }
 
 func TestBadGetCodeEmptyGET(t *testing.T) {
@@ -257,7 +272,7 @@ func estGetValidateCode(t *testing.T) {
         Secret: secret,
     }
     
-    assert.Equal(t, true, genQuery.validate())
+    assert.Equal(t, true, genQuery.Validate())
 
     code, _ := currentCode(genQuery)
     
