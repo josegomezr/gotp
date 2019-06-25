@@ -5,31 +5,17 @@ stages:
   - build
 
 before_script:
-    - mkdir -p /go/src/gitlab.com/diggi.io/
-    - ln -s $CI_PROJECT_DIR /go/src/gitlab.com/diggi.io/code
-    - cd /go/src/gitlab.com/diggi.io/code
-    # - curl https://raw.githubusercontent.com/golang/dep/master/install.sh | sh
-    # - dep ensure
+    - mkdir -p /go/src/github.com/josegomezr/
+    - ln -s $CI_PROJECT_DIR /go/src/github.com/josegomezr/gotp
+    - cd /go/src/github.com/josegomezr/gotp
     - make dep
 
-unit_tests:
+tests:
   stage: test
   script:
     - make test
-
-lint_code:
-  stage: test
-  script:
-    - make lint
-
-race_detector:
-  stage: test
-  script:
     - make race
-
-code_coverage:
-  stage: test
-  script:
+    - make lint
     - make coverage
 
 code_coverage_report:
@@ -49,4 +35,3 @@ build:
   artifacts:
     paths:
     - code
-

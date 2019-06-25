@@ -1,21 +1,33 @@
-package main
+package api
 import (
 	"fmt"
 	"net/http"
 	"github.com/gin-gonic/gin"
 )
 
-// GenericErrorResponse response
-type GenericErrorResponse struct {
+// ResponseGenericError response
+type ResponseGenericError struct {
 	Detail string `json:"detail" form:"detail" xml:"detail"`
 	Code string `json:"code" form:"code" xml:"code"`
+	Error error
+}
+
+// ResponseCodeGeneration response
+type ResponseCodeGeneration struct {
+    Code  string `json:"code" form:"code" xml:"code"`
+}
+
+// ResponseCodeVerification response
+type ResponseCodeVerification struct {
+    Valid  bool `json:"valid" form:"valid" xml:"valid"`
 }
 
 // Send response rendering
-func (r *GenericErrorResponse) Send(c *gin.Context) {
+func (r *ResponseGenericError) Send(c *gin.Context) {
 	acceptHeader := c.GetHeader("Accept")
 
 	switch acceptHeader {
+		case "text/xml":
 		case "application/xml":
 			c.XML(http.StatusBadRequest, r)
 		break
@@ -31,13 +43,8 @@ func (r *GenericErrorResponse) Send(c *gin.Context) {
 	}
 }
 
-// GetQueryResponse response
-type GetQueryResponse struct {
-    Code  string `json:"code" form:"code" xml:"code"`
-}
-
 // Send response rendering
-func (r *GetQueryResponse) Send(c *gin.Context) {
+func (r *ResponseCodeGeneration) Send(c *gin.Context) {
     acceptHeader := c.GetHeader("Accept")
 
 	switch acceptHeader {
@@ -53,13 +60,8 @@ func (r *GetQueryResponse) Send(c *gin.Context) {
 	}
 }
 
-// ValidateCodeResponse response
-type ValidateCodeResponse struct {
-    Valid  bool `json:"valid" form:"valid" xml:"valid"`
-}
-
 // Send response rendering
-func (r *ValidateCodeResponse) Send(c *gin.Context) {
+func (r *ResponseCodeVerification) Send(c *gin.Context) {
     acceptHeader := c.GetHeader("Accept")
 
 	switch acceptHeader {

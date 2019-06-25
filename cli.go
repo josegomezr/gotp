@@ -1,129 +1,181 @@
 package main
 import (
-    "fmt"
-    "os"
-	"flag"
+	"fmt"
+	"os"
+    "errors"
+    "log"
+    "github.com/josegomezr/gotp/api"
+    "github.com/urfave/cli"
 )
 
-// ConstSecretPrefix a comment
-var ConstSecretPrefix = ""
+func buildCli() *cli.App {
+    app := cli.NewApp()
+    app.Name = "gotp"
+    app.Version = "0.1.0"
+    app.Usage = "A TOTP Server & Utility"
+    
+    cli.VersionFlag = cli.BoolFlag{
+        Name: "version, v",
+        Usage: "print only the version",
+    }
 
-// ConstIssuer a comment
-var ConstIssuer = "Diggi.io"
+    app.Flags = []cli.Flag {
+        cli.StringFlag{
+            Name: "port, p",
+            Value: "2444",
+            Usage: "GOTP HTTP Server Port",
+            EnvVar: "PORT,GOTP_PORT",
+        },
+        cli.StringFlag{
+            Name: "host",
+            Value: "localhost",
+            Usage: "GOTP HTTP Server Host",
+            EnvVar: "HOST,GOTP_HOST",
+        },
+        cli.StringFlag{
+            Name: "secret",
+            Usage: "Secret key to check/generate the code against",
+        },
+        cli.StringFlag{
+            Name: "code",
+            Usage: "Code to be checked",
+        },
+    }
+  
+    app.Commands = []cli.Command{
+      {
+        Name:    "server",
+        Aliases: []string{"s"},
+        Usage:   "Runs GOTP HTTP server",
+        Action:  func(c *cli.Context) error {
+            port := c.Int("port")
+            if port < 0 {
+                return errors.New("Cannot start server: Invalid Port")
+            }
+            serve(c.String("host"), port)
+            return nil
+        },
+        Flags: []cli.Flag {
+            cli.StringFlag{
+                Name: "port, p",
+                Value: "2444",
+                Usage: "GOTP HTTP Server Port",
+                EnvVar: "PORT,GOTP_PORT",
+            },
+            cli.StringFlag{
+                Name: "host, H",
+                Value: "localhost",
+                Usage: "GOTP HTTP Server Host",
+                EnvVar: "HOST,GOTP_HOST",
+            },
+        },
+      },
+      {
+        Name:    "check",
+        Aliases: []string{"c"},
+        Usage:   "Checks a TOTP code",
+        Flags: []cli.Flag{
+            cli.StringFlag{
+                Name: "secret,s",
+                Usage: "Secret key to check/generate the code against",
+            },
+            cli.StringFlag{
+                Name: "data, d",
+                Usage: "Data payload to generate a secret key",
+            },
+            cli.StringFlag{
+                Name: "code, c",
+                Usage: "Code to be checked",
+            },
+        },
+        Action:  func(c *cli.Context) error {
+            query := api.RequestValidateCode{
+                Secret: c.String("secret"),
+                Payload: c.String("data"),
+                Code: c.String("code"),
+            }
+        
+            if err := query.Validate(); err != nil {
+                return err
+            }
+        
+            result, err := api.Verify(query)
+        
+            if err != nil {
+                return err
+            }
+            
+            if ! result {
+                fmt.Println("Result: Invalid")
+                fmt.Println("Detail: Invalid Code")
+                return err
+            }
+            
+            stringResponse := "Valid"
+            
+            if ! result {
+                stringResponse = "Invalid"
+            }
+        
+            fmt.Println("Result: ", stringResponse)
+            fmt.Println("Code: ", query.Code)
 
+            return nil
+        },
+      },
+      {
+        Name:    "gencode",
+        Aliases: []string{"g"},
+        Usage:   "Generates a TOTP code",
+        Flags: []cli.Flag{
+            cli.StringFlag{
+                Name: "secret,s",
+                Usage: "Secret key to check/generate the code against",
+            },
+            cli.StringFlag{
+                Name: "data, d",
+                Usage: "Data payload to generate a secret key",
+            },
+        },
+        Action:  func(c *cli.Context) error {
+            query := api.RequestGenerateCode{
+                Secret: c.String("secret"),
+                Payload: c.String("data"),
+            }
+            
+            err := query.Validate()
 
-func generateCommand(generateCmd *flag.FlagSet, generateSecret *string) {
-	generateCmd.Parse(os.Args[2:])
-	
-	secret := ConstSecretPrefix + *generateSecret
+            if err != nil {
+                fmt.Printf("Error in input data\n-> %s\n", err)
+                return err
+            }
 
-	if !validBase32(secret) {
-		fmt.Println("Invalid Secret Format")
-		os.Exit(2)
-	}
+            code, err := api.CurrentCode(query)
+            
+            if err != nil {
+                fmt.Printf("Error in input data\n-> %s\n", err)
+                return err
+            }
+    
+            if query.Payload != "" {
+                fmt.Println("Data Payload:", query.Secret)
+            }
 
-	query := GenerateCodeQuery{
-		Secret: secret,
-	}
-	if ! query.Validate() {
-		fmt.Println("Invalid Secret Format")
-		os.Exit(3)
-	}
-	
-	code, err := currentCode(query)
-	
-	if err != nil {
-		fmt.Println("Invalid Secret Checksum")
-		os.Exit(4)
-	}
-	
-	fmt.Println("Secret Key  :", *generateSecret)
-	fmt.Println("Current Code:", code)
-	os.Exit(0)
+            fmt.Println("Secret Key  :", query.Secret)
+            fmt.Println("Current Code:", code)
+            return nil
+        },
+      },
+    } 
+    return app
 }
 
-
-func checkCommand(checkCmd *flag.FlagSet, checkSecret *string, checkCode *string) {
-	checkCmd.Parse(os.Args[2:])
-	secret := ConstSecretPrefix + *checkSecret
-
-	if !validBase32(secret) {
-		fmt.Println("Result: Invalid")
-		fmt.Println("Detail: Invalid Secret Format")
-		os.Exit(2)
-	}
-
-	query := ValidateQuery{
-		Secret: secret,
-		Code: *checkCode,
-	}
-
-	if ! query.Validate() {
-		fmt.Println("Result: Invalid")
-		fmt.Println("Detail: Invalid Input")
-		os.Exit(3)
-	}
-
-	result, err := verify(query)
-
-	if err != nil {
-		fmt.Println("Result: Invalid")
-		fmt.Println("Detail: Validation error.", err)
-		os.Exit(4)
-	}
-	
-	if ! result {
-		fmt.Println("Result: Invalid")
-		fmt.Println("Detail: Invalid Code")
-		os.Exit(5)	
-	}
-	
-	stringResponse := "Valid"
-	if ! result {
-		stringResponse = "Invalid"
-	}
-	fmt.Println("Result: ", stringResponse)
-	fmt.Println("Code: ", query.Code)
-}
-
-func serverCommand(serverCmd *flag.FlagSet, serverHost *string, serverPort *int){
-	serverCmd.Parse(os.Args[2:])
-	fmt.Printf("Starting server at port: %s:%d", *serverHost, *serverPort)
-	serve(*serverHost, *serverPort)
-	return
-}
 
 func main() {
-	serverCmd := flag.NewFlagSet("server", flag.ExitOnError)
-    serverPort :=  serverCmd.Int("port", 2444, "Server Port")
-	serverHost :=  serverCmd.String("host", "localhost", "Server Host")
-	
-	generateCmd := flag.NewFlagSet("generate", flag.ExitOnError)
-	generateSecret := generateCmd.String("secret", "", "Secret Key")
-	
-	checkCmd := flag.NewFlagSet("check", flag.ExitOnError)
-	checkSecret := checkCmd.String("secret", "", "Secret Key")
-	checkCode := checkCmd.String("code", "", "Code to check")
-	
-	if len(os.Args) < 2 {
-		fmt.Println("Missing subcommand")
-		fmt.Printf("%s { server | generate | check } [options]\n", os.Args[0])
-		serverCmd.Usage()
-		generateCmd.Usage()
-		checkCmd.Usage()
-		os.Exit(1)
-	}
-	
-	switch os.Args[1] {
-	case "generate":
-		generateCommand(generateCmd, generateSecret)
-	case "check":
-		checkCommand(checkCmd, checkSecret, checkCode)
-	case "server":
-		serverCommand(serverCmd, serverHost, serverPort)
-		os.Exit(0)
-	default:
-		fmt.Println("Invalid subcommand. Expecting 'generate', 'check' or 'server'.")
-		os.Exit(2)
-	}
+    app := buildCli()
+    err := app.Run(os.Args)
+    if err != nil {
+        log.Fatal(err)
+    }
 }
+
