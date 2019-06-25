@@ -1,6 +1,6 @@
-PROJECT_NAME := "code"
-PKG := "gitlab.com/diggi.io/$(PROJECT_NAME)"
-PKG_LIST := $(shell go list ${PKG} | grep -v /vendor/)
+PROJECT_NAME := "gotp"
+PKG := "github.com/josegomezr/$(PROJECT_NAME)"
+PKG_LIST := $(shell go list ./... | grep -v /vendor/)
 GO_FILES := $(shell find . -name '*.go' | grep -v /vendor/ | grep -v _test.go)
 
 .PHONY: all dep build clean test coverage coverhtml lint
