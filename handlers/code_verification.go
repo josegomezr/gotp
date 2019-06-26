@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/josegomezr/gotp/api"
 )
@@ -32,11 +33,22 @@ func CodeVerification(c *gin.Context) {
 	result, err := api.Verify(query)
 	
 	if err != nil {
+		details := "Invalid Secret"
+		code := "EIS"
+		
+		if err == api.ErrorExpiredCode {
+			details = "Expired Code"
+			code = "EEC"
+		}
+
 		response := api.ResponseGenericError{
-			Detail: "Invalid Secret",
-			Code: "EIS",
+			Detail: details,
+			Code: code,
 			Error: err,
 		}
+
+		fmt.Println(err)
+
 		response.Send(c)
 		return
 	}

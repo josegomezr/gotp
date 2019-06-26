@@ -8,13 +8,20 @@ import (
 	qrcode "github.com/skip2/go-qrcode"
 )
 
+// ErrorExpiredCode ...
+var ErrorExpiredCode = errors.New("Invalid/Expired code")
+
+// ErrorInvalidSecret ...
+var ErrorInvalidSecret = errors.New("Invalid Secret Key")
+
+
 // CurrentCode ...
 func CurrentCode(query RequestGenerateCode) (string, error) {
 	t0 := int64(time.Now().UTC().Unix() / 30)
 	c := dgoogauth.ComputeCode(query.Secret, t0)
 
 	if c == -1 {
-		return "", errors.New("Invalid Secret")
+		return "", ErrorInvalidSecret
 	}
 
 	return fmt.Sprintf("%06d", c), nil
@@ -35,7 +42,7 @@ func Verify(query RequestValidateCode) (bool, error) {
 	}
 
 	if result == false {
-		return false, errors.New("Invalid/Expired code")
+		return false, ErrorExpiredCode
 	}
 
 	return true, nil
