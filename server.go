@@ -6,7 +6,6 @@ import (
 	"github.com/josegomezr/gotp/handlers"
 )
 
-
 func setupRouter() *gin.Engine {
 	r := gin.Default()
 	r.GET("/code", handlers.CodeGenerator)

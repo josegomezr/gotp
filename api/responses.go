@@ -3,6 +3,7 @@ import (
 	"fmt"
 	"net/http"
 	"github.com/gin-gonic/gin"
+	"encoding/json"
 )
 
 // ResponseGenericError response
@@ -58,6 +59,19 @@ func (r *ResponseCodeGeneration) Send(c *gin.Context) {
 			c.JSON(http.StatusOK, gin.H{"code": r.Code})
 		break
 	}
+}
+
+func (r *ResponseCodeGeneration) SendText(format string) string {
+	switch format {
+		case "json":
+			res, _ := json.Marshal(r)
+			return string(res)
+		break
+        case "simple":
+            return r.Code
+		break
+	}
+	return fmt.Sprintf("Code: %s", r.Code)
 }
 
 // Send response rendering

@@ -19,7 +19,7 @@ package main
 //     req, _ := http.NewRequest("GET", "/code", nil)
 
 //     q := req.URL.Query()
-    
+
 //     secret := "ABCDEF23ZWXYGHFM"
 
 //     q.Add("secret", secret)
@@ -32,7 +32,7 @@ package main
 //     response := ResponseCodeGeneration{}
 
 //     assert.Nil(t,json.Unmarshal(w.Body.Bytes(), &response))
-    
+
 //     code, _ := currentCode(RequestGenerateCode{Secret: ConstSecretPrefix + secret})
 //     assert.Equal(t, code, response.Code)
 // }
@@ -56,11 +56,10 @@ package main
 //     response := ResponseCodeGeneration{}
 
 //     assert.Nil(t,xml.Unmarshal(w.Body.Bytes(), &response))
-    
+
 //     code, _ := currentCode(RequestGenerateCode{Secret: ConstSecretPrefix + secret})
 //     assert.Equal(t, response.Code, code)
 // }
-
 
 // func TestGetCodeForm(t *testing.T) {
 //     router := setupRouter()
@@ -68,7 +67,7 @@ package main
 //     w := httptest.NewRecorder()
 
 //     secret := "ABCDEF23ZWXYGHFM"
-    
+
 //     payload := url.Values {}
 //     payload.Set("secret", secret)
 
@@ -82,12 +81,10 @@ package main
 //     response := ResponseCodeGeneration{}
 
 //     assert.Nil(t,json.Unmarshal(w.Body.Bytes(), &response))
-    
+
 //     code, _ := currentCode(RequestGenerateCode{Secret: ConstSecretPrefix + secret})
 //     assert.Equal(t, code, response.Code)
 // }
-
-
 
 // func TestBadGetCodeForm(t *testing.T) {
 //     router := setupRouter()
@@ -95,7 +92,7 @@ package main
 //     w := httptest.NewRecorder()
 
 //     secret := "191919191919"
-    
+
 //     payload := url.Values {}
 //     payload.Set("secret", secret)
 
@@ -113,7 +110,7 @@ package main
 
 //     w := httptest.NewRecorder()
 //     secret := "ABCDEFHHHDDZ1"
-    
+
 //     payload := url.Values {}
 //     payload.Set("secret", secret)
 
@@ -126,15 +123,13 @@ package main
 //     assert.Equal(t, http.StatusBadRequest, w.Code)
 // }
 
-
-
 // func TestBadGetCodeFormOverflow(t *testing.T) {
 //     router := setupRouter()
 
 //     w := httptest.NewRecorder()
 
 //     secret := "ABCDEF0123456789ABCDEF0123456789ABCDEF0123456789"
-    
+
 //     payload := url.Values {}
 //     payload.Set("secret", secret)
 
@@ -145,12 +140,11 @@ package main
 //     router.ServeHTTP(w, req)
 
 //     assert.Equal(t, http.StatusBadRequest, w.Code)
-    
+
 //     response := w.Body.String()
 
 //     assert.Equal(t, "E-EII: Invalid Input", response)
 // }
-
 
 // func TestBadGetCodeEmptySecret(t *testing.T) {
 //     router := setupRouter()
@@ -158,7 +152,7 @@ package main
 //     w := httptest.NewRecorder()
 
 //     secret := ""
-    
+
 //     payload := url.Values {}
 //     payload.Set("secret", secret)
 
@@ -169,7 +163,7 @@ package main
 //     router.ServeHTTP(w, req)
 
 //     assert.Equal(t, http.StatusBadRequest, w.Code)
-    
+
 //     response := w.Body.String()
 
 //     assert.Equal(t, "E-EII: Invalid Input", response)
@@ -186,9 +180,9 @@ package main
 
 //     router.ServeHTTP(w, req)
 //     assert.Equal(t, http.StatusBadRequest, w.Code)
-    
+
 //     response := w.Body.String()
-    
+
 //     assert.Equal(t, response, "E-EMP: Missing Params")
 // }
 
@@ -203,16 +197,15 @@ package main
 //     assert.Equal(t, http.StatusBadRequest, w.Code)
 // }
 
-
 // func TestGetCodeJSON(t *testing.T) {
 //     router := setupRouter()
 
 //     w := httptest.NewRecorder()
 
 //     secret := "ABCDEF23ZWXYGHFM"
-    
+
 //     payload := map[string]string{
-//         "secret" : secret,  
+//         "secret" : secret,
 //     }
 
 //     jsonValue, _ := json.Marshal(payload)
@@ -227,7 +220,7 @@ package main
 //     response := ResponseCodeGeneration{}
 
 //     assert.Nil(t,json.Unmarshal(w.Body.Bytes(), &response))
-    
+
 //     code, _ := currentCode(RequestGenerateCode{Secret: ConstSecretPrefix + secret})
 //     assert.Equal(t, code, response.Code)
 // }
@@ -238,9 +231,9 @@ package main
 //     w := httptest.NewRecorder()
 
 //     secret := "ABCDEF23ZWXYGHFM"
-    
+
 //     payload := RequestGenerateCode{
-//         Secret: secret,  
+//         Secret: secret,
 //     }
 
 //     xmlValue, _ := xml.MarshalIndent(payload, "", "")
@@ -255,11 +248,10 @@ package main
 //     response := ResponseCodeGeneration{}
 
 //     assert.Nil(t,json.Unmarshal(w.Body.Bytes(), &response))
-    
+
 //     code, _ := currentCode(RequestGenerateCode{Secret: ConstSecretPrefix + secret})
 //     assert.Equal(t, code, response.Code)
 // }
-
 
 // func estGetValidateCode(t *testing.T) {
 //     router := setupRouter()
@@ -271,11 +263,11 @@ package main
 //     genQuery := RequestGenerateCode{
 //         Secret: secret,
 //     }
-    
+
 //     assert.True(t, genQuery.Validate())
 
 //     code, _ := currentCode(genQuery)
-    
+
 //     payload := RequestValidateCode{
 //         Secret: secret,
 //         Code: code,
@@ -293,6 +285,6 @@ package main
 //     response := ResponseCodeVerification{}
 
 //     assert.Nil(t,json.Unmarshal(w.Body.Bytes(), &response))
-    
+
 //     assert.True(t, response.Valid)
 // }

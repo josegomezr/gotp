@@ -1,4 +1,5 @@
 package main
+
 // import (
 // 	"github.com/stretchr/testify/assert"
 // 	"testing"
@@ -11,7 +12,7 @@ package main
 // 	query := RequestGenerateCode{
 // 		Secret: ConstSecretPrefix + "A234567B",
 // 	}
-	
+
 // 	assert.True(t, query.Validate())
 
 // 	t0 := int64(time.Now().UTC().Unix() / 30)
@@ -27,11 +28,11 @@ package main
 // 	genQuery := RequestGenerateCode{
 // 		Secret: secret,
 // 	}
-	
+
 // 	assert.True(t, genQuery.Validate())
 
 // 	code, _ := currentCode(genQuery)
-	
+
 // 	valQuery := RequestValidateCode{
 // 		Secret: secret,
 // 		Code: code,
@@ -45,6 +46,6 @@ package main
 // 	assert.True(t, result)
 
 // 	valQuery.Secret = valQuery.Secret + "1"
-	
+
 // 	assert.False(t, valQuery.Validate())
 // }
